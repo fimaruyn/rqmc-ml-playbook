@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "RQMC for High-Dimensional Integration in ML: A Practitioner's Playbook"
+type: software
+authors:
+  - family-names: "Belov"
+    given-names: "Vladimir"
+    orcid: ""
+version: 0.1.0
+date-released: 2024-06-15
+url: "https://github.com/[ваш-логин]/rqmc-ml-playbook"
+repository-code: "https://github.com/[ваш-логин]/rqmc-ml-playbook"
+license: MIT
+abstract: >-
+  A reproducible research playbook on Randomized Quasi-Monte Carlo methods,
+  effective dimensionality, and compute-aware benchmarking for high-dimensional
+  integration in machine learning. Includes theory, implementations, and
+  validation pipelines.
+keywords:
+  - quasi-monte carlo
+  - randomized qmc
+  - high-dimensional integration
+  - effective dimensionality
+  - variance reduction
+  - machine learning
+  - reproducible research
+  - compute-aware benchmarking
