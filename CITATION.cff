@@ -5,11 +5,11 @@ type: software
 authors:
   - family-names: "Belov"
     given-names: "Vladimir"
-    orcid: ""
+    email: "vladimir.belov.an@gmail.com"
 version: 0.1.0
 date-released: 2024-06-15
-url: "https://github.com/[ваш-логин]/rqmc-ml-playbook"
-repository-code: "https://github.com/[ваш-логин]/rqmc-ml-playbook"
+url: "https://github.com/fimaruyn/rqmc-ml-playbook"
+repository-code: "https://github.com/fimaruyn/rqmc-ml-playbook"
 license: MIT
 abstract: >-
   A reproducible research playbook on Randomized Quasi-Monte Carlo methods,
