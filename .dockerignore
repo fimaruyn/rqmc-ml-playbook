@@ -1,0 +1,51 @@
+# Создаём минимальный .dockerignore — только самое необходимое
+$minimalDockerIgnore = @'
+# Virtual environments
+.venv
+
+# Python caches
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Build outputs
+build
+dist
+*.egg-info
+
+# IDE
+.vscode
+.idea
+*.swp
+*~
+
+# Jupyter
+.ipynb_checkpoints
+
+# Data (exclude contents, keep .gitkeep)
+data/*
+!data/.gitkeep
+
+# LaTeX outputs (keep sources)
+theory/*.pdf
+theory/*.aux
+theory/*.log
+theory/*.out
+
+# Logs and temp
+*.log
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+'@
+
+# Запись с правильным окончанием строк для Docker (LF, не CRLF)
+$minimalDockerIgnore -replace "`r`n", "`n" | Out-File -FilePath ".dockerignore" -Encoding ascii -NoNewline
+
+Write-Host "✅ .dockerignore replaced with minimal safe version" -ForegroundColor Green
+Write-Host "📄 New content:" -ForegroundColor Cyan
+Get-Content .dockerignore | ForEach-Object { Write-Host "  $_" }
