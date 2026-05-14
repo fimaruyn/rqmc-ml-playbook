@@ -79,6 +79,7 @@ theory/*.xdv
 *.tmp
 *.temp
 *.bak
+*.lock
 
 # OS files
 .DS_Store
@@ -93,3 +94,5 @@ desktop.ini
 
 # Docker (local overrides only)
 docker-compose.override.yml
+
+.coverage

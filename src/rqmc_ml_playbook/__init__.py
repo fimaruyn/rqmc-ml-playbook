@@ -13,4 +13,4 @@ All modules are designed for reproducibility, type safety, and Docker-based exec
 __version__ = "0.1.0"
 __author__ = "Vladimir Belov"
 __email__ = "vladimir.belov.an@gmail.com"
-__all__ = ["__version__", "__author__", "__email__"]
+__all__ = ["__author__", "__email__", "__version__"]

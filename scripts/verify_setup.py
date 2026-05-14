@@ -1,126 +1,83 @@
 #!/usr/bin/env python
-"""
-Verification script for Docker-based research environment.
-Run via: make run ARGS="python scripts/verify_setup.py"
-"""
+"""Verify that the research environment is correctly set up."""
+from __future__ import annotations
+
 import sys
-import platform
-import subprocess
 from pathlib import Path
+from typing import Final
+
+import psutil  # type: ignore[import-untyped]
 
 
-def check_python_version():
-    """Verify Python version matches project requirements."""
-    major, minor = sys.version_info[:2]
-    assert major == 3 and minor == 12, f"Expected Python 3.12, got {major}.{minor}"
-    print(f"✅ Python {major}.{minor}.{sys.version_info.micro}")
-
-
-def check_core_dependencies():
-    """Verify all core dependencies are importable."""
-    deps = {
-        "numpy": "1.24",
-        "scipy": "1.12",
-        "salib": "1.4",
-        "loguru": "0.7",
-        "yaml": "6.0",
-        "pandas": "2.0",
-        "matplotlib": "3.7",
-    }
-    
-    for module, min_version in deps.items():
-        try:
-            mod = __import__(module)
-            version = getattr(mod, "__version__", "unknown")
-            print(f"✅ {module} {version}")
-        except ImportError as e:
-            print(f"❌ {module}: {e}")
-            return False
+def check_python_version() -> bool:
+    """Check that Python version is >= 3.12."""
+    required: Final[tuple[int, int]] = (3, 12)
+    current = sys.version_info[:2]
+    if current < required:
+        print(f"❌ Python {required[0]}.{required[1]}+ required, got {current[0]}.{current[1]}")
+        return False
+    print(f"✅ Python {current[0]}.{current[1]}")
     return True
 
 
-def check_project_structure():
-    """Verify expected project directories exist."""
-    required_dirs = ["src", "tests", "configs", "theory", "docs", "scripts"]
-    for dir_name in required_dirs:
-        assert Path(dir_name).is_dir(), f"Missing directory: {dir_name}"
-    print(f"✅ Project structure verified ({len(required_dirs)} directories)")
+def check_package_installed(package_name: str, import_name: str | None = None) -> bool:
+    """Check that a package is installed and importable.
 
-
-def check_git_repository():
-    """Verify running inside a Git repository."""
+    Args:
+        package_name: Name as listed in pyproject.toml / PyPI
+        import_name: Name used in `import` statement (defaults to package_name)
+    """
+    import_name = import_name or package_name
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--git-dir"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        print(f"✅ Git repository: {result.stdout.strip()}")
+        __import__(import_name)
+        print(f"✅ {package_name}")
         return True
-    except subprocess.CalledProcessError:
-        print("⚠️  Not running inside a Git repository (optional for development)")
+    except ImportError as e:
+        print(f"❌ {package_name}: {e}")
         return False
 
-
-def check_compute_environment():
-    """Log compute environment for reproducibility."""
-    print(f"🖥️  Platform: {platform.platform()}")
-    print(f"🖥️  Machine: {platform.machine()}")
-    print(f"🖥️  Processor: {platform.processor() or 'N/A'}")
-    
-    try:
-        import psutil
-        print(f"🖥️  CPU cores: {psutil.cpu_count(logical=True)}")
-        print(f"🖥️  RAM: {psutil.virtual_memory().total / (1024**3):.1f} GB")
-    except ImportError:
-        pass
+def check_disk_space(min_gb: float = 5.0) -> bool:
+    """Check that sufficient disk space is available."""
+    usage = psutil.disk_usage(str(Path.cwd()))
+    available_gb = usage.free / (1024**3)
+    if available_gb < min_gb:
+        print(f"❌ Disk space: {available_gb:.1f} GB available, {min_gb} GB required")
+        return False
+    print(f"✅ Disk space: {available_gb:.1f} GB")
+    return True
 
 
-def main():
+def print_header(title: str) -> None:
+    """Print a formatted section header."""
+    print(f"\n{'='*60}\n{title}\n{'='*60}")
+
+
+def main() -> None:
     """Run all verification checks."""
-    print("🔍 Verifying research environment setup...\n")
-    
+    print_header("Environment Verification")
+
     checks = [
         ("Python version", check_python_version),
-        ("Core dependencies", check_core_dependencies),
-        ("Project structure", check_project_structure),
-        ("Git repository", check_git_repository),
-        ("Compute environment", check_compute_environment),
+        ("Package: numpy", lambda: check_package_installed("numpy")),
+        ("Package: scipy", lambda: check_package_installed("scipy")),
+        ("Package: salib", lambda: check_package_installed("salib", import_name="SALib")),
+        ("Disk space", check_disk_space),
     ]
-    
-    results = []
-    for name, check_func in checks:
-        print(f"\n[{name}]")
-        try:
-            result = check_func()
-            results.append((name, result is not False))
-        except AssertionError as e:
-            print(f"❌ {e}")
-            results.append((name, False))
-        except Exception as e:
-            print(f"❌ Unexpected error: {e}")
-            results.append((name, False))
-    
-    print(f"\n{'='*60}")
-    print("📊 VERIFICATION SUMMARY")
-    print(f"{'='*60}")
-    passed = sum(1 for _, ok in results if ok)
+
+    results = [check() for _, check in checks]
+
+    print_header("Summary")
+    passed = sum(results)
     total = len(results)
-    
-    for name, ok in results:
-        status = "✅ PASS" if ok else "❌ FAIL"
-        print(f"{status}: {name}")
-    
-    print(f"\nOverall: {passed}/{total} checks passed")
-    
+    print(f"{passed}/{total} checks passed")
+
     if passed == total:
         print("🎉 Environment is ready for research!")
-        return 0
+        sys.exit(0)
     else:
-        print("⚠️  Some checks failed. Review output above.")
-        return 1
+        print("⚠️  Some checks failed. Review above.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

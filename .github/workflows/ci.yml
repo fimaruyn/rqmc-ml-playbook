@@ -1,4 +1,3 @@
-# .github/workflows/ci.yml
 name: CI/CD Pipeline
 
 on:
@@ -9,11 +8,14 @@ on:
 
 env:
   IMAGE_NAME: rqmc-ml-playbook
-  DOCKER_BUILDKIT: 1
+  PYTHON_VERSION: "3.12"
+  REGISTRY: ghcr.io
 
 jobs:
+  # === FAST PATH: Линтинг и тесты без Docker ===
   lint-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,12 +23,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dev dependencies
+      - name: Install uv
+        run: pip install --upgrade uv
+
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install uv
           uv pip install --system -e ".[dev]"
 
       - name: Run linter (ruff)
@@ -38,32 +41,89 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v --cov=src --cov-report=term-missing
 
-  docker-build:
+  # === FULL PATH: Docker build + integration tests ===
+  docker-integration:
     runs-on: ubuntu-latest
     needs: lint-and-test
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build Docker image
-        run: docker build -t $IMAGE_NAME:latest .
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Verify core imports in container
         run: |
-          docker run --rm $IMAGE_NAME:latest -c "
+          docker run --rm ${{ env.IMAGE_NAME }}:ci-test -c "
           import rqmc_ml_playbook, numpy, scipy, pandas, salib, loguru, matplotlib, yaml
           print('✅ All core imports successful in CI container')
           "
 
-      - name: Run tests in container
+      - name: Run tests inside container
         run: |
-          docker run --rm -v ${{ github.workspace }}:/app $IMAGE_NAME:latest -m pytest tests/ -v
+          docker run --rm ${{ env.IMAGE_NAME }}:ci-test -m pytest tests/ -v
 
-      - name: Verify PDF compilation
+      - name: Verify LaTeX compilation (Russian + Cyrillic)
         run: |
-          docker run --rm -v ${{ github.workspace }}:/app $IMAGE_NAME:latest -c "
-          import subprocess
-          result = subprocess.run(['latexmk', '-pdf', '-interaction=nonstopmode', 'theory/main.tex'], cwd='/app/theory')
-          assert result.returncode == 0, 'PDF compilation failed'
-          print('✅ PDF compilation successful')
+          docker run --rm -v ${{ github.workspace }}:/app ${{ env.IMAGE_NAME }}:ci-test -c "
+          cd theory && 
+          latexmk -xelatex -interaction=nonstopmode main.tex &&
+          test -f main.pdf && echo '✅ PDF compilation successful'
           "
+
+      - name: Upload PDF artifact (for manual review)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: theory-manuscript-pdf
+          path: theory/main.pdf
+          retention-days: 7
+
+  # === OPTIONAL: Publish to GHCR on main branch ===
+  publish:
+    runs-on: ubuntu-latest
+    needs: docker-integration
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
