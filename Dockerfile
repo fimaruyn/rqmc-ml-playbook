@@ -1,50 +1,79 @@
 # syntax=docker/dockerfile:1.4
 # rqmc-ml-playbook/Dockerfile
-# FIX: Handle SALib case-sensitivity on Linux filesystem
+# Reproducible environment for RQMC research with Russian LaTeX support
 
 FROM python:3.12-slim-bookworm AS base
 
+# ========== METADATA ==========
 LABEL org.opencontainers.image.title="RQMC-ML Playbook"
+LABEL org.opencontainers.image.description="Reproducible research environment for Randomized Quasi-Monte Carlo methods in ML with Russian LaTeX support"
 LABEL org.opencontainers.image.authors="Vladimir Belov <vladimir.belov.an@gmail.com>"
 LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/fimaruyn/rqmc-ml-playbook"
 
+# ========== ENVIRONMENT ==========
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
     DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
+    LC_ALL=C.UTF-8 \
+    # LaTeX: use XeLaTeX as default engine for polyglossia support
+    LATEXMK_ENGINE=xelatex
 
-# System dependencies
+# ========== SYSTEM DEPENDENCIES ==========
+# System dependencies: build tools + LaTeX + fonts + fontconfig
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Build essentials for Python packages
     build-essential git curl ca-certificates \
     libopenblas-dev liblapack-dev \
-    && rm -rf /var/lib/apt/lists/* && apt-get clean
+    # XeLaTeX engine and core packages
+    texlive-xetex \
+    texlive-lang-cyrillic \
+    texlive-lang-english \
+    # Font support and fontconfig (REQUIRED for fc-cache)
+    texlive-fonts-recommended \
+    fonts-liberation \
+    fonts-linuxlibertine \
+    fontconfig \
+    # Additional LaTeX packages for mathematics and bibliography
+    texlive-latex-extra \
+    texlive-science \
+    texlive-bibtex-extra \
+    biber \
+    latexmk \
+    # Cleanup
+    && rm -rf /var/lib/apt/lists/* && apt-get clean \
+    # Update font cache (now fontconfig is installed)
+    && fc-cache -fv
 
-# Install uv via pip
+# ========== PYTHON TOOLCHAIN ==========
+# Install uv via pip (more reliable than ghcr.io in restricted networks)
 RUN pip install --no-cache-dir "uv>=0.4.0,<0.6.0"
 
+# ========== WORKSPACE SETUP ==========
 WORKDIR /app
 
-# Copy all source files BEFORE installing
+# Copy ALL source files BEFORE installing Python dependencies
+# This ensures pyproject.toml, README.md, src/, theory/ are all present
 COPY . .
 
-# Install dependencies explicitly
+# ========== PYTHON DEPENDENCIES ==========
+# Install core scientific stack explicitly first (ensures SALib is installed)
 RUN uv pip install --system --no-cache \
     "numpy>=1.24.0" "scipy>=1.12.0" "SALib>=1.4.0" \
     "pyyaml>=6.0" "loguru>=0.7.0" "matplotlib>=3.7.0" "pandas>=2.0.0" && \
+    # Then install dev dependencies
     uv pip install --system --no-cache ".[dev]"
 
-# ✅ FIX: Create lowercase symlink for SALib if needed (Linux case-sensitivity)
-# FIX: Create lowercase symlink for SALib if needed (Linux case-sensitivity)
-RUN python -c "import sys; from pathlib import Path; sp=Path(sys.prefix)/'lib/python3.12/site-packages'; su=sp/'SALib'; sl=sp/'salib'; \
-    (sl.symlink_to(su) and print(f'✅ Created symlink: {sl} -> {su}')) if su.exists() and not sl.exists() and not sl.is_symlink() else print('✅ SALib import path already correct')"
-# Non-root user
+# ========== NON-ROOT USER ==========
+# Create non-root user for security best practice
 RUN useradd -m -u 1000 researcher && \
     chown -R researcher:researcher /app && \
     chmod -R 755 /app
 USER researcher
 
-# Explicit Python entrypoint
-ENTRYPOINT ["/usr/local/bin/python"]
-CMD []
+# ========== ENTRYPOINT ==========
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["python"]

@@ -68,6 +68,7 @@ theory/*.synctex.gz
 theory/*.bbl
 theory/*.blg
 theory/*.pdf
+theory/*.xdv
 !theory/main.tex
 !theory/figures/
 

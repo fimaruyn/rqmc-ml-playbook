@@ -1,5 +1,3 @@
-# Создаём минимальный .dockerignore — только самое необходимое
-$minimalDockerIgnore = @'
 # Virtual environments
 .venv
 
@@ -33,6 +31,8 @@ theory/*.pdf
 theory/*.aux
 theory/*.log
 theory/*.out
+theory/*.xdv
+
 
 # Logs and temp
 *.log
@@ -41,11 +41,3 @@ theory/*.out
 # OS
 .DS_Store
 Thumbs.db
-'@
-
-# Запись с правильным окончанием строк для Docker (LF, не CRLF)
-$minimalDockerIgnore -replace "`r`n", "`n" | Out-File -FilePath ".dockerignore" -Encoding ascii -NoNewline
-
-Write-Host "✅ .dockerignore replaced with minimal safe version" -ForegroundColor Green
-Write-Host "📄 New content:" -ForegroundColor Cyan
-Get-Content .dockerignore | ForEach-Object { Write-Host "  $_" }
