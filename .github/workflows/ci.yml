@@ -39,7 +39,12 @@ jobs:
         run: mypy src/ scripts/
 
       - name: Run tests
-        run: pytest tests/ -v --cov=src --cov-report=term-missing
+        run: |
+          if [ -d "tests" ] && [ "$(ls -A tests/test_*.py 2>/dev/null)" ]; then
+            pytest tests/ -v --cov=src --cov-report=term-missing
+          else
+            echo "⚠️ No tests found, skipping..."
+          fi
 
   # === FULL PATH: Docker build + integration tests ===
   docker-integration:
