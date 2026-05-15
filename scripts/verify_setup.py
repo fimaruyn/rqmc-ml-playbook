@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Final
 
-import psutil  # type: ignore[import-untyped]
+import psutil
 
 
 def check_python_version() -> bool:
@@ -35,6 +35,7 @@ def check_package_installed(package_name: str, import_name: str | None = None) -
     except ImportError as e:
         print(f"❌ {package_name}: {e}")
         return False
+
 
 def check_disk_space(min_gb: float = 5.0) -> bool:
     """Check that sufficient disk space is available."""

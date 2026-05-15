@@ -36,7 +36,7 @@ dependencies = [
     "loguru>=0.7.0",
     "matplotlib>=3.7.0",
     "pandas>=2.0.0",
-    "psutil>=5.9.0",  # Required for scripts/verify_setup.py (disk usage checks)
+    "psutil>=5.9.0",
 ]
 
 [project.optional-dependencies]
@@ -50,7 +50,7 @@ dev = [
     "mypy>=1.8.0",
     "ruff>=0.3.0",
     "pre-commit>=3.6.0",
-    "types-psutil>=0.1.0",  # Type stubs for psutil (mypy support)
+    "types-psutil>=0.1.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -62,19 +62,13 @@ include = ["rqmc_ml_playbook*"]
 target-version = "py312"
 line-length = 100
 
-# Linting rules (migrated from top-level to [tool.ruff.lint])
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
-ignore = ["E501"]  # Line length handled by formatter
+ignore = ["E501"]
 
-# Formatting settings
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-
-# Optional: Exclude scripts/ from strict linting if needed
-# [tool.ruff.lint.per-file-ignores]
-# "scripts/*" = ["E501", "B007"]
 
 # ===== MYPY CONFIGURATION =====
 [tool.mypy]
@@ -84,9 +78,8 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 
-# Relax checks for utility scripts (pragmatic approach for research code)
 [[tool.mypy.overrides]]
-module = ["scripts.*"] 
+module = ["scripts.*"]
 disallow_untyped_defs = false
 ignore_missing_imports = true
 
