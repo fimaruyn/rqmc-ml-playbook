@@ -1,68 +1,102 @@
-# RQMC for High-Dimensional Integration in ML  
+# RQMC for High-Dimensional Integration in ML
 ## RQMC для высокоразмерного интегрирования в машинном обучении
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.12+-3776AB.svg)](https://www.python.org/)
-[![Reproducibility](https://img.shields.io/badge/Reproducibility-Docker|pytest|CI-green)]()
-[![Status](https://img.shields.io/badge/Status-Research_Playbook-orange)]()
+[![CI/CD Pipeline](https://github.com/fimaruyn/rqmc-ml-playbook/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fimaruyn/rqmc-ml-playbook/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/downloads/)
 
-A structured, reproducible research playbook on Randomized Quasi-Monte Carlo (RQMC) methods for high-dimensional integration in machine learning. Focus: effective dimensionality, compute-aware benchmarking, and variance reduction in probabilistic pipelines.
+A reproducible research environment for Randomized Quasi-Monte Carlo methods in high-dimensional integration.
 
-Структурированное исследовательское руководство по рандомизированным методам квази-Монте-Карло (RQMC) для высокоразмерного интегрирования в машинном обучении. Фокус: эффективная размерность, учёт вычислительного бюджета и снижение дисперсии в вероятностных пайплайнах.
+Воспроизводимая исследовательская среда для методов рандомизированного квази-Монте-Карло в задачах высокоразмерного интегрирования.
 
 ---
 
-## Project Structure / Структура проекта
+## Project Structure
 
 ```
 rqmc-ml-playbook/
-├── src/                    # Production-grade Python modules
-├── tests/                  # Unit & integration tests (pytest)
-├── configs/                # YAML/TOML experiment configurations
-├── notebooks/              # Prototyping & interactive exploration
-├── theory/                 # LaTeX manuscript, bibliography, figures
-├── docs/                   # Technical documentation, decision logs
-├── scripts/                # CLI runners for benchmarks & automation
-├── data/                   # Generated artifacts (git-ignored)
-├── .github/                # Issue/PR templates, CI/CD workflows
-├── pyproject.toml          # Modern packaging & dependency management
-├── Dockerfile              # Reproducible container environment
-├── Makefile                # Unified command interface
-├── README.md               # This file
-└── CITATION.cff            # Machine-readable citation metadata
+├── src/rqmc_ml_playbook/   # Core Python modules
+├── tests/                   # Unit and integration tests
+├── theory/                  # LaTeX manuscript (XeLaTeX + polyglossia)
+├── scripts/                 # Utility and benchmark scripts
+├── configs/                 # Experiment configurations
+├── pyproject.toml           # Project metadata and dependencies
+├── Dockerfile               # Reproducible container environment
+├── Makefile                 # Command interface
+├── README.md                # This file
+├── LICENSE                  # MIT License
+└── CITATION.cff             # Citation metadata
 ```
 
-## Quick Start / Быстрый старт
+---
+
+## Quick Start
+
+### Local development
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/[your-username]/rqmc-ml-playbook.git
+git clone https://github.com/fimaruyn/rqmc-ml-playbook.git
 cd rqmc-ml-playbook
 
-# 2. Build the Docker environment (Stage 2)
-make build
-
-# 3. Verify setup
-make run ARGS="python scripts/verify_setup.py"
-
-# 4. Start interactive development
-make shell
+uv sync --extra dev
+uv run python scripts/verify_setup.py
+uv run pytest tests/ -v
 ```
 
-## Documentation / Документация
+### Docker environment
 
-- [Contribution Guidelines](docs/CONTRIBUTING.md) — Coming soon
-- [Decision Log](docs/decisions.log) — Coming soon
-- [Reproducibility Protocol](docs/reproduction.md) — Coming soon
+```bash
+make build
+make run ARGS="-c 'import salib, numpy, scipy; print(\"Imports OK\")'"
+make test
+make pdf
+```
 
-## License / Лицензия
+---
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+## Continuous Integration
 
-Данный проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
+This repository uses GitHub Actions to automatically validate changes on push and pull request. The workflow performs:
 
-## Citation / Цитирование
+- Code linting with ruff
+- Static type checking with mypy
+- Unit testing with pytest
+- Docker image build and verification
+- LaTeX manuscript compilation with XeLaTeX
 
-If you use this work, please cite via `CITATION.cff` or GitHub's "Cite this repository" feature.
+All checks must pass before changes can be merged into the main branch.
 
-При использовании данной работы просьба цитировать через файл `CITATION.cff` или функцию GitHub "Cite this repository".
+---
+
+## Documentation
+
+- Contribution guidelines: `docs/CONTRIBUTING.md`
+- Reproducibility protocol: `docs/reproduction.md`
+- LaTeX manuscript: `theory/main.tex`
+
+---
+
+## License
+
+This project is licensed under the MIT License. See LICENSE for details.
+
+Проект распространяется под лицензией MIT. Подробности в файле LICENSE.
+
+---
+
+## Citation
+
+If you use this work in your research, please cite via CITATION.cff or GitHub's "Cite this repository" feature.
+
+При использовании данной работы в исследованиях просьба цитировать через файл CITATION.cff или функцию GitHub "Cite this repository".
+
+```bibtex
+@software{belov_rqmc_ml_playbook_2026,
+  author = {Belov, Vladimir},
+  title = {RQMC for High-Dimensional Integration in ML},
+  year = {2026},
+  url = {https://github.com/fimaruyn/rqmc-ml-playbook},
+  version = {0.1.0},
+  license = {MIT}
+}
+```
