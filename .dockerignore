@@ -41,3 +41,15 @@ theory/*.xdv
 # OS
 .DS_Store
 Thumbs.db
+
+.venv/
+.env
+*.pdf
+*.aux
+*.out
+*.fls
+*.fdb_latexmk
+.git/
+.github/
+*.md
+!README.md
