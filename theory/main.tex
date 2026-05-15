@@ -1,18 +1,40 @@
-% theory/main.tex
-% LaTeX manuscript: RQMC for High-Dimensional Integration in ML
-% Compile with: latexmk -pdf main.tex
+\documentclass[12pt, a4paper]{article}
 
-\documentclass[11pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{amsmath,amssymb,amsthm}
-\usepackage{booktabs}
+% Языки и шрифты (XeLaTeX)
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+\setmainfont{Liberation Serif}[Script=Cyrillic, Language=Russian]
+\setsansfont{Liberation Sans}[Script=Cyrillic, Language=Russian]
+\setmonofont{Liberation Mono}[Script=Cyrillic, Language=Russian]
+% Явное объявление кириллического моноширинного шрифта для polyglossia
+\newfontfamily\cyrillicfonttt{Liberation Mono}[Script=Cyrillic, Language=Russian]
+
+% Математика
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+
+% Оформление теорем
+\theoremstyle{plain}
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{lemma}[theorem]{Лемма}
+\newtheorem{definition}[theorem]{Определение}
+\newtheorem{remark}[theorem]{Замечание}
+
+% Макросы из вашего оригинального шаблона
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\vx}{\boldsymbol{x}}
+\newcommand{\II}{[0, 1)}
+
+% Геометрия страницы
+\usepackage[left=25mm, right=25mm, top=25mm, bottom=25mm]{geometry}
+
+% Гиперссылки
 \usepackage{hyperref}
-\usepackage{cleveref}
 
-\title{RQMC for High-Dimensional Integration in ML:\\
-A Practitioner's Playbook}
-\author{Vladimir Belov}
+% Метаданные
+\title{RQMC для высокоразмерного интегрирования в ML:\\Заглушка для тестов}
+\author{В. А. Белов}
 \date{\today}
 
 \begin{document}
@@ -20,19 +42,22 @@ A Practitioner's Playbook}
 \maketitle
 
 \begin{abstract}
-This document provides a structured, reproducible guide to Randomized Quasi-Monte Carlo (RQMC) methods for high-dimensional integration in machine learning. Focus areas include effective dimensionality, compute-aware benchmarking, and variance reduction in probabilistic pipelines.
+Это минимальный документ-заглушка для проверки сборки LaTeX в Docker-окружении.
 \end{abstract}
 
-\section{Introduction}
-% Content will be added during Stage 3-4.
+\section{Введение}
+Данный файл служит для тестирования компиляции русскоязычного LaTeX-документа с использованием XeLaTeX и polyglossia.
 
-\section{Mathematical Foundations}
-% Content will be added during Stage 3-4.
+\begin{definition}[Тестовое определение]
+Пусть $f \colon \II^s \to \RR$ --- интегрируемая функция.
+\end{definition}
 
-\section{Applications in ML}
-% Content will be added during Stage 3-4.
+\begin{theorem}[Тестовая теорема]
+Интеграл $I(f) = \int_{\II^s} f(\vx) \, d\vx$ может быть аппроксимирован методом квази-Монте-Карло.
+\end{theorem}
 
-\bibliographystyle{plain}
-\bibliography{references}
+\begin{remark}
+Это замечание проверяет работу окружений и моноширинного шрифта (например, \texttt{remark}).
+\end{remark}
 
 \end{document}

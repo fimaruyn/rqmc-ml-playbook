@@ -1,0 +1,55 @@
+# Virtual environments
+.venv
+
+# Python caches
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Build outputs
+build
+dist
+*.egg-info
+
+# IDE
+.vscode
+.idea
+*.swp
+*~
+
+# Jupyter
+.ipynb_checkpoints
+
+# Data (exclude contents, keep .gitkeep)
+data/*
+!data/.gitkeep
+
+# LaTeX outputs (keep sources)
+theory/*.pdf
+theory/*.aux
+theory/*.log
+theory/*.out
+theory/*.xdv
+
+
+# Logs and temp
+*.log
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+.venv/
+.env
+*.pdf
+*.aux
+*.out
+*.fls
+*.fdb_latexmk
+.git/
+.github/
+*.md
+!README.md
