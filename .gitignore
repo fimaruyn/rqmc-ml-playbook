@@ -69,6 +69,8 @@ theory/*.bbl
 theory/*.blg
 theory/*.pdf
 theory/*.xdv
+theory/*.bcf
+theory/*.xml
 !theory/main.tex
 !theory/figures/
 
